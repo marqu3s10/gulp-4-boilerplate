@@ -1,4 +1,4 @@
-"use strict";
+"use sqqtrict";
 
 const gulp = require("gulp");
 const pkg = require('./package.json');
