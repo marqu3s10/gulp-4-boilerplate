@@ -97,7 +97,6 @@ function clean() {
   return $.del(["./build"]);
 }
 
-
 function images() {
   return gulp
   .src(config.images.src)
