@@ -7,6 +7,18 @@ const $ = require('gulp-load-plugins')({
   scope: ['devDependencies']
 });
 
+const banner = [
+    "/**",
+    " * @project        <%= pkg.name %>",
+    " * @author         <%= pkg.author %>",
+    " * @build          " + $.moment().format("llll") + " ET",
+    " * @release        " + $.gitRevSync.long() + " [" + $.gitRevSync.branch() + "]",
+    " * @copyright      Copyright (c) " + $.moment().format("YYYY") + ", <%= pkg.copyright %>",
+    " *",
+    " */",
+    ""
+].join("\n");
+
 function styles() {
   return gulp
     .src(paths.paths.src.sass + '**/*.sass')
