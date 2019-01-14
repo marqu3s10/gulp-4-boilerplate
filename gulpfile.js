@@ -9,40 +9,54 @@ const $ = require('gulp-load-plugins')({
 
 const banner = [
     "/**",
-    " * @project        <%= pkg.name %>",
-    " * @author         <%= pkg.author %>",
+    " * @project        <%= paths.name %>",
+    " * @author         <%= paths.author %>",
     " * @build          " + $.moment().format("llll") + " ET",
     " * @release        " + $.gitRevSync.long() + " [" + $.gitRevSync.branch() + "]",
-    " * @copyright      Copyright (c) " + $.moment().format("YYYY") + ", <%= pkg.copyright %>",
+    " * @copyright      Copyright (c) " + $.moment().format("YYYY") + ", <%= paths.copyright %>",
     " *",
     " */",
     ""
 ].join("\n");
 
 function styles() {
+  $.fancyLog("> Compiling sass");
   return gulp
-    .src(paths.paths.src.sass + '**/*.sass')
+    .src(paths.paths.src.sass + '*.sass')
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
     .pipe($.sourcemaps.init())
-      .pipe(
-        $.sass({
-          outputStyle: 'compressed',
-        })
-      )
-      // .pipe($.cache d('sass_compile'))
-
-    .pipe(
-      $.sourcemaps.write('./', {
-        mapFile: function(mapFilePath) {
-          return mapFilePath.replace('.css.map', '.min.map');
-        }
-      })
-    )
-    .pipe($.rename({
-      basename: 'main',
-      suffix: '.min'
-    }))
+    .pipe($.sass())
+    .pipe($.sourcemaps.write('./'))
+    .pipe($.size({gzip: true, showFiles: true}))
     .pipe(gulp.dest(paths.paths.build.css))
+    .pipe($.browserSync.stream())
+}
+
+function stylesDist() {
+  $.fancyLog("> Building css");
+  return gulp
+    .src([
+      "./node_modules/normalize.css/normalize.css",
+      "./build/css/*.css"
+    ])
+    .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
+    .pipe($.newer({dest: "./dist/css/main.min.css"}))
+    .pipe(print())
+    .pipe($.sourcemaps.init())
+    .pipe($.concat("main.min.css"))
+    .pipe($.cssnano({
+      discardComments: {
+        removeAll: true
+      },
+      discardDuplicates: true,
+      discardEmpty: true,
+      minifyFontValues: true,
+      minifySelectors: true
+    }))
+    .pipe($.header(banner, {paths: paths}))
+    .pipe($.sourcemaps.write("./"))
+    .pipe($.size({gzip: true, showFiles: true}))
+    .pipe(gulp.dest("./dist/css/"))
     .pipe($.browserSync.stream())
 }
 
@@ -106,7 +120,7 @@ function fonts() {
 }
 
 function clean() {
-  return $.del(["./build"]);
+  return $.del(["./build", "./dist"]);
 }
 
 function images() {
@@ -530,6 +544,9 @@ const watch = gulp.series(
 
 exports.default = watch;
 exports.scripts = scripts;
+
 exports.styles = styles;
+exports.stylesDist = stylesDist;
+
 exports.images = images;
 exports.clean = clean
