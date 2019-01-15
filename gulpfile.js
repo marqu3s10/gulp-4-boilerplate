@@ -19,7 +19,7 @@ const banner = [
     ""
 ].join("\n");
 
-function styles() {
+function sass() {
   $.fancyLog("> Compiling sass");
   return gulp
     .src(paths.paths.src.sass + '*.sass')
@@ -32,7 +32,7 @@ function styles() {
     .pipe($.browserSync.stream())
 }
 
-function stylesDist() {
+function css() {
   $.fancyLog("> Building css");
   return gulp
     .src([
@@ -41,7 +41,6 @@ function stylesDist() {
     ])
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
     .pipe($.newer({dest: "./dist/css/main.min.css"}))
-    .pipe(print())
     .pipe($.sourcemaps.init())
     .pipe($.concat("main.min.css"))
     .pipe($.cssnano({
@@ -537,6 +536,8 @@ function images() {
   .pipe(notify({ message: '> Images task finished!', onLast: true }));
 }
 
+const styles = gulp.series(sass, css);
+
 const watch = gulp.series(
   gulp.parallel(scripts, styles, pug),
   gulp.parallel(watchFiles, browserSync)
@@ -546,7 +547,6 @@ exports.default = watch;
 exports.scripts = scripts;
 
 exports.styles = styles;
-exports.stylesDist = stylesDist;
 
 exports.images = images;
 exports.clean = clean

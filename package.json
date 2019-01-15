@@ -1,6 +1,7 @@
 {
   "name": "portfolio",
   "version": "1.0.0",
+  "sasslintConfig": "./.sass-lint.yml",
   "description": "Porfolio of Alvaro Marques Ramos",
   "main": "gulpfile.js",
   "scripts": {
@@ -63,7 +64,7 @@
     "distCss": [
       "./node_modules/normalize.css/normalize.css",
       "./node_modules/flexboxgrid/dist/flexboxgrid.min.css",
-      "./node_modules/vue2-autocomplete/dist/style/vue2-autocomplete.css",
+      "./node_modulesi/vue2-autocomplete/dist/style/vue2-autocomplete.css",
       "./src/css/prism-theme.css",
       "./build/fonts/fontello/css/fontello-codes.css",
       "./build/css/*.css",
@@ -192,7 +193,9 @@
     "gulp-size": "^3.0.0",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-uglify": "3.0.1",
-    "moment": "^2.23.0"
+    "moment": "^2.23.0",
+    "prismjs": "^1.15.0",
+    "sass-lint": "^1.12.1"
   },
   "dependencies": {
     "fg-loadcss": "^1.2.0",
@@ -203,7 +206,6 @@
     "normalize.css": "^5.0.0",
     "parse5": "^5.1.0",
     "picturefill": "^3.0.2",
-    "prismjs": "^1.5.1",
     "tiny-cookie": "^1.0.1"
   }
 }
