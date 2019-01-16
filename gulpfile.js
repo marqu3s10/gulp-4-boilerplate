@@ -23,6 +23,7 @@ function sass() {
   $.fancyLog("> Compiling sass");
   return gulp
     .src(paths.paths.src.sass + '*.sass')
+    .pipe($.changed(paths.paths.src.sass))
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
     .pipe($.sourcemaps.init())
     .pipe($.sass())
@@ -72,28 +73,75 @@ function pug(buildHTML) {
     .pipe($.browserSync.stream());
 }
 
-function scripts() {
-  return (gulp
-    .src(paths.paths.src.js + '**/*.js')
-    .pipe($.sourcemaps.init())
+// Combine prismJS and conf files into one bundle.
+function prismJs(){
+  $.fancyLog("-> Building prism.min.js...");
+  return gulp
+    .src(paths.globs.prismJs)
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
-    .pipe($.concat('main.js'))
-    .pipe(
-      $.babel({
-        presets: ['@babel/env'],
-      })
-    )
+    .pipe($.newer({dest: paths.paths.build.js}))
+    .pipe($.concat("prism.min.js"))
     .pipe($.uglify())
-    .pipe($.sourcemaps.write('./')) //change to variable path (ignacio example)
-    .pipe(
-      $.rename({
-        basename: 'main',
-        suffix: '.min'
-      })
-    )
+    .pipe($.size({gzip: true, showFiles: true}))
     .pipe(gulp.dest(paths.paths.build.js))
     .pipe($.browserSync.stream())
-  )
+}
+
+function babelJs(){
+  $.fancyLog("-> Transpiling Javascript via Babel...");
+  return gulp
+    .src(paths.globs.babelJs)
+    .pipe($.sourcemaps.init())
+    .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
+    .pipe($.newer({dest: paths.paths.build.js}))
+    .pipe($.concat('main.js'))
+    .pipe($.babel({presets: ['@babel/env']}))
+    .pipe($.size({gzip: true, showFiles: true}))
+    .pipe(gulp.dest(paths.paths.build.js))
+    .pipe($.browserSync.stream())
+}
+
+function inlineJs() {
+  $.fancyLog("-> Copying inline js");
+  return gulp.src(paths.globs.inlineJs)
+    .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
+    .pipe($.if(["*.js", "!*.min.js"],
+      $.newer({dest: paths.paths.templates + "_inlinejs", ext: ".min.js"}),
+      $.newer({dest: paths.paths.templates + "_inlinejs"})
+    ))
+    .pipe($.if(["*.js", "!*.min.js"],
+      $.uglify()
+    ))
+    .pipe($.if(["*.js", "!*.min.js"],
+      $.rename({suffix: ".min"})
+    ))
+
+    .pipe($.size({gzip: true, showFiles: true}))
+    .pipe(gulp.dest(paths.paths.templates + "_inlinejs"))
+    .pipe($.browserSync.stream())
+}
+
+function js(){
+  $.fancyLog("-> Building js");
+  return gulp.src(paths.globs.distJs)
+    .pipe($.sourcemaps.init())
+    .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
+    .pipe($.if(["*.js", "!*.min.js"],
+      $.newer({dest: paths.paths.dist.js, ext: ".min.js"}),
+      $.newer({dest: paths.paths.dist.js})
+    ))
+    .pipe($.if(["*.js", "!*.min.js"],
+      $.uglify()
+    ))
+    .pipe($.sourcemaps.write("./"))
+    .pipe($.if(["*.js", "!*.min.js"],
+      $.rename({suffix: ".min"})
+    ))
+    .pipe($.header(banner, {paths: paths}))
+    .pipe($.size({gzip: true, showFiles: true}))
+    .pipe(gulp.dest(paths.paths.dist.js))
+    .pipe($.browserSync.stream())
+    .pipe($.browserSync.stream())
 }
 
 function browserSync(done) {
@@ -109,7 +157,7 @@ function browserSync(done) {
 function watchFiles() {
   gulp.watch(paths.paths.src.sass, styles);
   gulp.watch(paths.paths.src.pug, pug);
-  gulp.watch(paths.paths.src.js, scripts);
+  gulp.watch(paths.paths.src.js, babelJs);
 }
 
 function fonts() {
@@ -119,7 +167,7 @@ function fonts() {
 }
 
 function clean() {
-  return $.del(["./build", "./dist"]);
+  return $.del(["./build", "./dist", "./public", "./craft"]);
 }
 
 function images() {
@@ -538,15 +586,25 @@ function images() {
 
 const styles = gulp.series(sass, css);
 
+const scripts = gulp.series(
+  gulp.parallel(prismJs, babelJs, inlineJs),
+  js
+);
+
 const watch = gulp.series(
   gulp.parallel(scripts, styles, pug),
   gulp.parallel(watchFiles, browserSync)
 );
 
 exports.default = watch;
-exports.scripts = scripts;
 
+exports.scripts = scripts;
 exports.styles = styles;
 
 exports.images = images;
-exports.clean = clean
+exports.clean = clean;
+
+exports.prismJs = prismJs;
+exports.babelJs = babelJs;
+exports.inlineJs = inlineJs;
+exports.js = js;
