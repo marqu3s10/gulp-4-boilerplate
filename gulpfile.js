@@ -156,7 +156,7 @@ function js(){
 
 function favicons() {
     $.fancyLog("-> Generating favicons");
-    return gulp.src("./src/img/favicon.png")
+    return gulp.src("./src/img/site/favicon.png")
     .pipe($.favicons({
       appName: paths.name,
       appDescription: paths.description,
@@ -218,9 +218,9 @@ function clean() {
 
 function images() {
   return gulp
-  .src(paths.images.src)
-  .pipe($.changed(paths.images.src))
-  .pipe($.plumber({ errorHandler: notify.onError('Error: <%= error.message %>') }))
+  .src("./src/img/**/*.{png,jpg,jpeg}")
+  .pipe($.newer("./dist/assets/images/"))
+  .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
   .pipe(
     $.responsive(
       {
@@ -616,7 +616,7 @@ function images() {
       {
         // Global configuration for all images
         // The output quality for JPEG, WebP and TIFF output formats
-        quality: 85,
+        quality: 75,
         // Use progressive (interlace) scan for JPEG and PNG output
         progressive: true,
         // Strip all metadata
@@ -626,8 +626,8 @@ function images() {
       }
     )
   )
-  .pipe(gulp.dest(paths.images.dist))
-  .pipe(notify({ message: '> Images task finished!', onLast: true }));
+  .pipe(gulp.dest("./dist/assets/images/"))
+  .pipe($.notify({ message: '> Images task finished!', onLast: true }));
 }
 
 const html = gulp.series(pug, copyHtml);
