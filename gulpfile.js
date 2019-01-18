@@ -66,11 +66,21 @@ function pug(buildHTML) {
       paths.paths.src.pug + '**/*.pug',
       '!./src/pug/_includes{,/**}'
     ])
+    .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
     .pipe($.pug({
       pretty: true //Indent
     }))
     .pipe(gulp.dest("./build/"))
     .pipe($.browserSync.stream());
+}
+
+function copyHtml(){
+  return gulp
+  .src("./build/**/*.html")
+  .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
+  .pipe($.htmlmin({ collapseWhitespace: true }))
+  .pipe($.size({gzip: true, showFiles: true}))
+  .pipe(gulp.dest("./dist/"))
 }
 
 // Combine prismJS and conf files into one bundle.
@@ -144,10 +154,46 @@ function js(){
     .pipe($.browserSync.stream())
 }
 
+function favicons() {
+    $.fancyLog("-> Generating favicons");
+    return gulp.src("./src/img/favicon.png")
+    .pipe($.favicons({
+      appName: paths.name,
+      appDescription: paths.description,
+      developerName: paths.author,
+      developerURL: paths.urls.live,
+      background: "#FFFFFF",
+      path: "assets/images/site/",
+      url: paths.site_url,
+      display: "standalone",
+      orientation: "portrait",
+      version: paths.version,
+      logging: false,
+      online: false,
+      html: "../../../../src/pug/_includes/head/favicons.html",
+      pipeHTML: true,
+      replace: true,
+      icons: {
+        android: false, // Create Android homescreen icon. `boolean`
+        appleIcon: true, // Create Apple touch icons. `boolean`
+        appleStartup: false, // Create Apple startup images. `boolean`
+        coast: true, // Create Opera Coast icon. `boolean`
+        favicons: true, // Create regular favicons. `boolean`
+        firefox: true, // Create Firefox OS icons. `boolean`
+        opengraph: false, // Create Facebook OpenGraph image. `boolean`
+        twitter: false, // Create Twitter Summary Card image. `boolean`
+        windows: true, // Create Windows 8 tile icons. `boolean`
+        yandex: true // Create Yandex browser icon. `boolean`
+      }
+    }))
+    .pipe($.size({gzip: true, showFiles: true}))
+    .pipe(gulp.dest("./dist/assets/images/site/"));
+}
+
 function browserSync(done) {
   $.browserSync.init({
     server: {
-      baseDir: "./build/"
+      baseDir: "./dist/"
     },
     port: 3000
   });
@@ -156,7 +202,7 @@ function browserSync(done) {
 
 function watchFiles() {
   gulp.watch(paths.paths.src.sass, styles);
-  gulp.watch(paths.paths.src.pug, pug);
+  gulp.watch(paths.paths.src.pug, html);
   gulp.watch(paths.paths.src.js, babelJs);
 }
 
@@ -172,8 +218,8 @@ function clean() {
 
 function images() {
   return gulp
-  .src(config.images.src)
-  .pipe($.changed(config.images.src))
+  .src(paths.images.src)
+  .pipe($.changed(paths.images.src))
   .pipe($.plumber({ errorHandler: notify.onError('Error: <%= error.message %>') }))
   .pipe(
     $.responsive(
@@ -580,28 +626,33 @@ function images() {
       }
     )
   )
-  .pipe(gulp.dest(config.images.dist))
+  .pipe(gulp.dest(paths.images.dist))
   .pipe(notify({ message: '> Images task finished!', onLast: true }));
 }
 
+const html = gulp.series(pug, copyHtml);
 const styles = gulp.series(sass, css);
+const scripts = gulp.series(gulp.parallel(prismJs, babelJs, inlineJs), js);
 
-const scripts = gulp.series(
-  gulp.parallel(prismJs, babelJs, inlineJs),
-  js
-);
+const build = gulp.series(
+  clean, images, favicons,
+  gulp.parallel(html, styles, scripts)
+)
 
 const watch = gulp.series(
-  gulp.parallel(scripts, styles, pug),
+  gulp.parallel(scripts, styles, html),
   gulp.parallel(watchFiles, browserSync)
 );
 
-exports.default = watch;
 
-exports.scripts = scripts;
+exports.default = watch;
+exports.build = build;
+exports.html = html;
 exports.styles = styles;
+exports.scripts = scripts;
 
 exports.images = images;
+exports.favicons = favicons;
 exports.clean = clean;
 
 exports.prismJs = prismJs;

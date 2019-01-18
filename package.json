@@ -28,7 +28,7 @@
     "dist": {
       "base": "./public/",
       "css": "./public/css/",
-      "js": "./public/js/",
+      "js": "./dist/js/",
       "fonts": "./public/fonts/",
       "img": "./public/img/"
     },
@@ -42,7 +42,7 @@
       "img": "./build/img/"
     },
     "favicon": {
-      "src": "./src/img/favicon_src.png",
+      "src": "./src/img/logo.png",
       "dest": "./public/img/site/",
       "path": "/img/site/"
     },
@@ -173,8 +173,10 @@
     "gulp-concat": "^2.6.1",
     "gulp-cssnano": "^2.1.3",
     "gulp-debug": "^2.1.2",
+    "gulp-favicons": "^2.3.0",
     "gulp-filter": "^5.1.0",
     "gulp-header": "^2.0.7",
+    "gulp-htmlmin": "^5.0.1",
     "gulp-if": "^2.0.2",
     "gulp-load-plugins": "^1.3.0",
     "gulp-newer": "^1.4.0",
@@ -189,7 +191,6 @@
     "gulp-size": "^3.0.0",
     "gulp-sourcemaps": "^2.6.4",
     "gulp-uglify": "3.0.1",
-    "jspm": "^0.16.53",
     "moment": "^2.23.0",
     "prismjs": "^1.15.0",
     "sass-lint": "^1.12.1"
@@ -204,13 +205,5 @@
     "parse5": "^5.1.0",
     "picturefill": "^3.0.2",
     "tiny-cookie": "^1.0.1"
-  },
-  "jspm": {
-    "dependencies": {},
-    "devDependencies": {
-      "babel": "npm:babel-core@^5.8.24",
-      "babel-runtime": "npm:babel-runtime@^5.8.24",
-      "core-js": "npm:core-js@^1.1.4"
-    }
   }
 }
