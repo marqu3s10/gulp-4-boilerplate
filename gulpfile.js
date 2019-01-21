@@ -22,8 +22,8 @@ const banner = [
 function sass() {
   $.fancyLog("> Compiling sass");
   return gulp
-    .src(paths.paths.src.sass + '*.sass')
-    .pipe($.changed(paths.paths.src.sass))
+    .src('./src/sass/*.sass')
+    .pipe($.changed(paths.paths.build.css))
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
     .pipe($.sourcemaps.init())
     .pipe($.sass())
@@ -38,10 +38,11 @@ function css() {
   return gulp
     .src([
       "./node_modules/normalize.css/normalize.css",
+      "./build/fonts/fontello/css/fontello.css",
       "./build/css/*.css"
     ])
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
-    .pipe($.newer({dest: "./dist/css/main.min.css"}))
+    .pipe($.newer({dest: "./dist/assets/styles/main.min.css"}))
     .pipe($.sourcemaps.init())
     .pipe($.concat("main.min.css"))
     .pipe($.cssnano({
@@ -56,7 +57,7 @@ function css() {
     .pipe($.header(banner, {paths: paths}))
     .pipe($.sourcemaps.write("./"))
     .pipe($.size({gzip: true, showFiles: true}))
-    .pipe(gulp.dest("./dist/css/"))
+    .pipe(gulp.dest("./dist/assets/styles/"))
     .pipe($.browserSync.stream())
 }
 
@@ -206,10 +207,21 @@ function watchFiles() {
   gulp.watch(paths.paths.src.js, babelJs);
 }
 
-function fonts() {
-  return gulp
-  .src('src/fonts/**/*')
-  .pipe(gulp.dest('build/fonts/'))
+//generate-fontello task
+function fontello() {
+  return gulp.src("./src/fonts/fontello/config.json")
+    .pipe($.fontello({font: "fonts"}))
+    .pipe(gulp.dest("./build/fonts/fontello"))
+}
+
+//copy fonts task
+function copyFonts() {
+  return gulp.src([
+    "./src/fonts/**/*.{eot,ttf,woff,woff2}",
+    "!./src/fonts/fontello",
+    "./build/fonts/fontello/fonts/*.{eot,ttf,woff,woff2,svg}"
+  ])
+  .pipe(gulp.dest("./dist/assets/fonts/"));
 }
 
 function clean() {
@@ -218,7 +230,7 @@ function clean() {
 
 function images() {
   return gulp
-  .src("./src/img/**/*.{png,jpg,jpeg}")
+  .src("./src/img/test/*.+(png|jpg)") // Change path
   .pipe($.newer("./dist/assets/images/"))
   .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
   .pipe(
@@ -633,27 +645,33 @@ function images() {
 const html = gulp.series(pug, copyHtml);
 const styles = gulp.series(sass, css);
 const scripts = gulp.series(gulp.parallel(prismJs, babelJs, inlineJs), js);
+const fonts = gulp.series(fontello, copyFonts);
 
 const build = gulp.series(
-  clean, images, favicons,
+  clean,
+  gulp.parallel(images, favicons, fonts),
   gulp.parallel(html, styles, scripts)
 )
 
 const watch = gulp.series(
+  fonts,
   gulp.parallel(scripts, styles, html),
   gulp.parallel(watchFiles, browserSync)
 );
 
 
 exports.default = watch;
+
 exports.build = build;
 exports.html = html;
 exports.styles = styles;
 exports.scripts = scripts;
+exports.fonts = fonts;
 
 exports.images = images;
 exports.favicons = favicons;
 exports.clean = clean;
+
 
 exports.prismJs = prismJs;
 exports.babelJs = babelJs;
