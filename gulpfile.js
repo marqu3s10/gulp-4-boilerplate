@@ -1,7 +1,7 @@
 "use strict";
 
 const gulp = require("gulp");
-const paths = require('./package.json');
+const paths = require('./config.json');
 const $ = require('gulp-load-plugins')({
   pattern: ['*'],
   scope: ['devDependencies']
@@ -22,14 +22,14 @@ const banner = [
 function sass() {
   $.fancyLog("> Compiling sass");
   return gulp
-    .src('./src/sass/*.sass')
-    .pipe($.changed(paths.paths.build.css))
+    .src(paths.styles.src)
+    .pipe($.changed(paths.styles.build))
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
     .pipe($.sourcemaps.init())
     .pipe($.sass())
     .pipe($.sourcemaps.write('./'))
     .pipe($.size({gzip: true, showFiles: true}))
-    .pipe(gulp.dest(paths.paths.build.css))
+    .pipe(gulp.dest(paths.styles.build))
     .pipe($.browserSync.stream())
 }
 
@@ -37,12 +37,14 @@ function css() {
   $.fancyLog("> Building css");
   return gulp
     .src([
-      "./node_modules/normalize.css/normalize.css",
-      "./build/fonts/fontello/css/fontello.css",
-      "./build/css/*.css"
-    ])
+      paths.node.normalize,
+      paths.fonts.fontello.build + paths.fonts.fontello.cssName,
+      paths.styles.build + paths.styles.cssName
+    ], {
+      allowEmpty: true
+    })
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
-    .pipe($.newer({dest: "./dist/assets/styles/main.min.css"}))
+    .pipe($.newer({dest: paths.styles.dist}))
     .pipe($.sourcemaps.init())
     .pipe($.concat("main.min.css"))
     .pipe($.cssnano({
@@ -57,68 +59,67 @@ function css() {
     .pipe($.header(banner, {paths: paths}))
     .pipe($.sourcemaps.write("./"))
     .pipe($.size({gzip: true, showFiles: true}))
-    .pipe(gulp.dest("./dist/assets/styles/"))
+    .pipe(gulp.dest(paths.styles.dist))
     .pipe($.browserSync.stream())
 }
 
 function pug(buildHTML) {
   return gulp
     .src([
-      paths.paths.src.pug + '**/*.pug',
-      '!./src/pug/_includes{,/**}'
+      paths.html.src + paths.html.pugName,
+      "!" + paths.html.src + paths.html.includesName
     ])
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
     .pipe($.pug({
       pretty: true //Indent
     }))
-    .pipe(gulp.dest("./build/"))
+    .pipe(gulp.dest(paths.html.build))
     .pipe($.browserSync.stream());
 }
 
 function copyHtml(){
   return gulp
-  .src("./build/**/*.html")
+  .src(paths.html.build + paths.html.htmlName)
   .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
   .pipe($.htmlmin({ collapseWhitespace: true }))
   .pipe($.size({gzip: true, showFiles: true}))
-  .pipe(gulp.dest("./dist/"))
+  .pipe(gulp.dest(paths.html.dist))
 }
 
-// Combine prismJS and conf files into one bundle.
 function prismJs(){
   $.fancyLog("-> Building prism.min.js...");
   return gulp
-    .src(paths.globs.prismJs)
+    .src(paths.scripts.prismJs)
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
-    .pipe($.newer({dest: paths.paths.build.js}))
+    .pipe($.newer({dest: paths.scripts.build}))
     .pipe($.concat("prism.min.js"))
     .pipe($.uglify())
     .pipe($.size({gzip: true, showFiles: true}))
-    .pipe(gulp.dest(paths.paths.build.js))
+    .pipe(gulp.dest(paths.scripts.build))
     .pipe($.browserSync.stream())
 }
 
 function babelJs(){
   $.fancyLog("-> Transpiling Javascript via Babel...");
   return gulp
-    .src(paths.globs.babelJs)
+    .src(paths.scripts.src)
     .pipe($.sourcemaps.init())
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
-    .pipe($.newer({dest: paths.paths.build.js}))
+    .pipe($.newer({dest: paths.scripts.build}))
     .pipe($.concat('main.js'))
     .pipe($.babel({presets: ['@babel/env']}))
     .pipe($.size({gzip: true, showFiles: true}))
-    .pipe(gulp.dest(paths.paths.build.js))
+    .pipe(gulp.dest(paths.scripts.build))
     .pipe($.browserSync.stream())
 }
 
 function inlineJs() {
   $.fancyLog("-> Copying inline js");
-  return gulp.src(paths.globs.inlineJs)
+  return gulp.src(paths.scripts.inlineJs)
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
     .pipe($.if(["*.js", "!*.min.js"],
-      $.newer({dest: paths.paths.templates + "_inlinejs", ext: ".min.js"}),
-      $.newer({dest: paths.paths.templates + "_inlinejs"})
+      $.newer({dest: paths.scripts.templates + "_inlinejs", ext: ".min.js"}),
+      $.newer({dest: paths.scripts.templates + "_inlinejs"})
     ))
     .pipe($.if(["*.js", "!*.min.js"],
       $.uglify()
@@ -128,18 +129,18 @@ function inlineJs() {
     ))
 
     .pipe($.size({gzip: true, showFiles: true}))
-    .pipe(gulp.dest(paths.paths.templates + "_inlinejs"))
+    .pipe(gulp.dest(paths.scripts.templates + "_inlinejs"))
     .pipe($.browserSync.stream())
 }
 
 function js(){
   $.fancyLog("-> Building js");
-  return gulp.src(paths.globs.distJs)
+  return gulp.src(paths.scripts.build + paths.scripts.jsName)
     .pipe($.sourcemaps.init())
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
     .pipe($.if(["*.js", "!*.min.js"],
-      $.newer({dest: paths.paths.dist.js, ext: ".min.js"}),
-      $.newer({dest: paths.paths.dist.js})
+      $.newer({dest: paths.scripts.dist, ext: ".min.js"}),
+      $.newer({dest: paths.scripts.dist})
     ))
     .pipe($.if(["*.js", "!*.min.js"],
       $.uglify()
@@ -150,7 +151,7 @@ function js(){
     ))
     .pipe($.header(banner, {paths: paths}))
     .pipe($.size({gzip: true, showFiles: true}))
-    .pipe(gulp.dest(paths.paths.dist.js))
+    .pipe(gulp.dest(paths.scripts.dist))
     .pipe($.browserSync.stream())
     .pipe($.browserSync.stream())
 }
@@ -194,7 +195,7 @@ function favicons() {
 function browserSync(done) {
   $.browserSync.init({
     server: {
-      baseDir: "./dist/"
+      baseDir: paths.dist
     },
     port: 3000
   });
@@ -202,36 +203,40 @@ function browserSync(done) {
 }
 
 function watchFiles() {
-  gulp.watch(paths.paths.src.sass, styles);
-  gulp.watch(paths.paths.src.pug, html);
-  gulp.watch(paths.paths.src.js, babelJs);
+  gulp.watch(paths.styles.src, styles);
+  gulp.watch(paths.html.src, html);
+  gulp.watch(paths.scripts.src, scripts);
 }
 
-//generate-fontello task
 function fontello() {
-  return gulp.src("./src/fonts/fontello/config.json")
+  return gulp.src(paths.fonts.fontello.src + paths.fonts.fontello.configName)
     .pipe($.fontello({font: "fonts"}))
-    .pipe(gulp.dest("./build/fonts/fontello"))
+    .pipe(gulp.dest(paths.fonts.fontello.build))
 }
 
-//copy fonts task
 function copyFonts() {
   return gulp.src([
-    "./src/fonts/**/*.{eot,ttf,woff,woff2}",
-    "!./src/fonts/fontello",
-    "./build/fonts/fontello/fonts/*.{eot,ttf,woff,woff2,svg}"
+    paths.fonts.src + paths.fonts.fontsName,
+    "!" + paths.fonts.fontello.src,
+    paths.fonts.fontello.build + paths.fonts.fontsName
   ])
-  .pipe(gulp.dest("./dist/assets/fonts/"));
+  .pipe(gulp.dest(paths.fonts.dist))
 }
 
 function clean() {
-  return $.del(["./build", "./dist", "./public", "./craft"]);
+  return $.del(["./build", "./dist", "./craft"]);
+}
+
+function svg() {
+  return gulp.src(paths.svg.src)
+    .pipe($.svgmin())
+    .pipe(gulp.dest(paths.svg.dist));
 }
 
 function images() {
   return gulp
-  .src("./src/img/test/*.+(png|jpg)") // Change path
-  .pipe($.newer("./dist/assets/images/"))
+  .src(paths.images.src) // Change path
+  .pipe($.newer(paths.images.dist))
   .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
   .pipe(
     $.responsive(
@@ -638,18 +643,19 @@ function images() {
       }
     )
   )
-  .pipe(gulp.dest("./dist/assets/images/"))
+  .pipe(gulp.dest(paths.images.dist))
   .pipe($.notify({ message: '> Images task finished!', onLast: true }));
 }
 
 const html = gulp.series(pug, copyHtml);
 const styles = gulp.series(sass, css);
-const scripts = gulp.series(gulp.parallel(prismJs, babelJs, inlineJs), js);
+// const scripts = gulp.series(gulp.parallel(prismJs, babelJs, inlineJs), js);
+const scripts = gulp.series(babelJs, js);
 const fonts = gulp.series(fontello, copyFonts);
 
 const build = gulp.series(
   clean,
-  gulp.parallel(images, favicons, fonts),
+  gulp.parallel(images, favicons, fonts, svg),
   gulp.parallel(html, styles, scripts)
 )
 
@@ -669,9 +675,9 @@ exports.scripts = scripts;
 exports.fonts = fonts;
 
 exports.images = images;
+exports.svg = svg;
 exports.favicons = favicons;
 exports.clean = clean;
-
 
 exports.prismJs = prismJs;
 exports.babelJs = babelJs;

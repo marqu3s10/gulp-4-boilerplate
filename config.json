@@ -1,0 +1,67 @@
+{
+  "dist": "./dist",
+  "images": {
+    "src": "./src/images/*.{jpg,png}",
+    "dist": "./dist/assets/images"
+  },
+  "svg": {
+    "src": "./src/images/**/*.svg",
+    "dist": "./dist/assets/images"
+  },
+  "scripts": {
+    "src": "./src/scripts/*.js",
+    "build": "./build/assets/scripts/",
+    "dist": "./dist/assets/scripts",
+    "jsName": "*.js",
+    "prismJs": [
+      "./node_modules/prismjs/prism.js",
+      "./node_modules/prismjs/components/prism-markup.js",
+      "./node_modules/prismjs/components/prism-apacheconf.js",
+      "./node_modules/prismjs/components/prism-css.js",
+      "./node_modules/prismjs/components/prism-json.js",
+      "./node_modules/prismjs/components/prism-twig.js",
+      "./node_modules/prismjs/components/prism-php.js",
+      "./node_modules/prismjs/components/prism-bash.js",
+      "./node_modules/prismjs/components/prism-javascript.js",
+      "./node_modules/prismjs/plugins/line-numbers/prism-line-numbers.min.js"
+    ],
+    "inlineJs": [
+      "./node_modules/fg-loadcss/src/loadCSS.js",
+      "./node_modules/fg-loadcss/src/cssrelpreload.js",
+      "./node_modules/fontfaceobserver/fontfaceobserver.js",
+      "./node_modules/loadjs/dist/loadjs.min.js",
+      "./node_modules/tiny-cookie/tiny-cookie.min.js"
+    ],
+    "templates": "./craft/templates/"
+  },
+  "styles": {
+    "src": "./src/styles/*.sass",
+    "build": "./build/assets/styles",
+    "dist": "./dist/assets/styles",
+    "cssName": "*.css",
+    "sassName": "*.sass"
+  },
+  "fonts": {
+    "src": "./src/",
+    "dist": "./dist/assets/fonts/",
+    "fontsName": "fonts/**/*.{eot,ttf,woff,woff2,svg}",
+
+    "fontello": {
+      "src": "./src/fonts/fontello/",
+      "build": "./build/assets/fonts/fontello/",
+      "cssName": "css/fontello.css",
+      "configName": "config.json"
+    }
+  },
+  "node": {
+    "normalize": "./node_modules/normalize.css/normalize.css"
+  },
+  "html": {
+    "src": "./src/pug/",
+    "build": "./build/",
+    "dist": "./dist",
+    "pugName": "**/*.pug",
+    "htmlName": "**/*.html",
+    "includesName": "_includes{,/**}"
+  }
+}
