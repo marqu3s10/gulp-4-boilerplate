@@ -1,0 +1,36 @@
+// ==========================================================================
+// Mixins
+// ==========================================================================
+
+// ==========================================================================
+// Media Querys (short way to add media queries)
+// ==========================================================================
+
+@mixin screen($media)
+    @media #{$media}
+      @content
+
+
+// ==========================================================================
+// Fonts (short way to add fonts, It just generates a @font-face with the fallbacks needed)
+// ==========================================================================
+
+@mixin font-face($folder__name, $name, $path: #{$font__path} , $weight: normal, $style: normal, $ttf: null, $eot: null, $woff: null, $svg: null)
+  @font-face
+    font-family: $folder__name
+
+    @if $eot
+      src: url( $path + $folder__name + '/' + $name + '.eot')
+      src: url( $path + $folder__name + '/' + $name + '.eot?#iefix') format('embedded-opentype')
+
+    @if $woff
+      src: url( $path + $folder__name + '/' + $name + '.woff') format('woff')
+
+    @if $ttf
+      src: url( $path + $folder__name + '/' + $name + '.ttf') format('truetype')
+
+    @if $svg
+      src: url($path + $folder__name + '/' + $name + '.svg?#webfont') format('svg')
+
+    font-weight: $weight
+    font-style: $style

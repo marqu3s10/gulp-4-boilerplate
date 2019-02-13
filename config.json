@@ -35,9 +35,9 @@
     "templates": "./craft/templates/"
   },
   "styles": {
-    "src": "./src/styles/*.sass",
-    "build": "./build/assets/styles",
-    "dist": "./dist/assets/styles",
+    "src": "./src/styles/",
+    "build": "./build/assets/styles/",
+    "dist": "./dist/assets/styles/",
     "cssName": "*.css",
     "sassName": "*.sass"
   },

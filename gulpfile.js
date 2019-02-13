@@ -1,11 +1,13 @@
-"use strict";
-
 const gulp = require("gulp");
 const paths = require('./config.json');
+var browserSync  = require( 'browser-sync' ).create();
+
 const $ = require('gulp-load-plugins')({
   pattern: ['*'],
   scope: ['devDependencies']
 });
+
+
 
 const banner = [
     "/**",
@@ -22,7 +24,7 @@ const banner = [
 function sass() {
   $.fancyLog("> Compiling sass");
   return gulp
-    .src(paths.styles.src)
+    .src(paths.styles.src + paths.styles.sassName)
     .pipe($.changed(paths.styles.build))
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
     .pipe($.sourcemaps.init())
@@ -30,10 +32,9 @@ function sass() {
     .pipe($.sourcemaps.write('./'))
     .pipe($.size({gzip: true, showFiles: true}))
     .pipe(gulp.dest(paths.styles.build))
-    .pipe($.browserSync.stream())
 }
 
-function css() {
+function css(done) {
   $.fancyLog("> Building css");
   return gulp
     .src([
@@ -61,6 +62,7 @@ function css() {
     .pipe($.size({gzip: true, showFiles: true}))
     .pipe(gulp.dest(paths.styles.dist))
     .pipe($.browserSync.stream())
+    done();
 }
 
 function pug(buildHTML) {
@@ -74,16 +76,17 @@ function pug(buildHTML) {
       pretty: true //Indent
     }))
     .pipe(gulp.dest(paths.html.build))
-    .pipe($.browserSync.stream());
 }
 
-function copyHtml(){
+function copyHtml(done){
   return gulp
   .src(paths.html.build + paths.html.htmlName)
   .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
   .pipe($.htmlmin({ collapseWhitespace: true }))
   .pipe($.size({gzip: true, showFiles: true}))
   .pipe(gulp.dest(paths.html.dist))
+  .pipe($.browserSync.stream());
+  done();
 }
 
 function prismJs(){
@@ -96,7 +99,7 @@ function prismJs(){
     .pipe($.uglify())
     .pipe($.size({gzip: true, showFiles: true}))
     .pipe(gulp.dest(paths.scripts.build))
-    .pipe($.browserSync.stream())
+    // .pipe($.browserSync.stream())
 }
 
 function babelJs(){
@@ -110,7 +113,7 @@ function babelJs(){
     .pipe($.babel({presets: ['@babel/env']}))
     .pipe($.size({gzip: true, showFiles: true}))
     .pipe(gulp.dest(paths.scripts.build))
-    .pipe($.browserSync.stream())
+    // .pipe($.browserSync.stream())
 }
 
 function inlineJs() {
@@ -130,7 +133,7 @@ function inlineJs() {
 
     .pipe($.size({gzip: true, showFiles: true}))
     .pipe(gulp.dest(paths.scripts.templates + "_inlinejs"))
-    .pipe($.browserSync.stream())
+    // .pipe($.browserSync.stream())
 }
 
 function js(){
@@ -152,24 +155,23 @@ function js(){
     .pipe($.header(banner, {paths: paths}))
     .pipe($.size({gzip: true, showFiles: true}))
     .pipe(gulp.dest(paths.scripts.dist))
-    .pipe($.browserSync.stream())
-    .pipe($.browserSync.stream())
+    // .pipe($.browserSync.stream())
 }
 
 function favicons() {
     $.fancyLog("-> Generating favicons");
-    return gulp.src("./src/img/site/favicon.png")
+    return gulp.src("./src/images/site/favicon.png")
     .pipe($.favicons({
-      appName: paths.name,
-      appDescription: paths.description,
-      developerName: paths.author,
-      developerURL: paths.urls.live,
+      // appName: paths.name,
+      // appDescription: paths.description,
+      // developerName: paths.author,
+      // developerURL: paths.urls.live,
       background: "#FFFFFF",
       path: "assets/images/site/",
-      url: paths.site_url,
+      // url: paths.site_url,
       display: "standalone",
       orientation: "portrait",
-      version: paths.version,
+      // version: paths.version,
       logging: false,
       online: false,
       html: "../../../../src/pug/_includes/head/favicons.html",
@@ -192,20 +194,34 @@ function favicons() {
     .pipe(gulp.dest("./dist/assets/images/site/"));
 }
 
-function browserSync(done) {
-  $.browserSync.init({
+function browserSyncc() {
+  browserSync.init({
     server: {
-      baseDir: paths.dist
+      baseDir: paths.dist,
     },
-    port: 3000
+    // ghostMode: false,
+    // online: true,
   });
+}
+// BrowserSync Reload
+function reload(done) {
+  browserSync.reload();
   done();
 }
 
 function watchFiles() {
-  gulp.watch(paths.styles.src, styles);
-  gulp.watch(paths.html.src, html);
-  gulp.watch(paths.scripts.src, scripts);
+  // gulp.watch(paths.styles.src, gulp.series(styles, reload));
+  // gulp.watch(paths.styles.src).on('change', gulp.series(styles, reload));
+  // gulp.watch(paths.html.src).on('change', gulp.series(html));
+  // gulp.watch(paths.images.src).on('change', gulp.series(images));
+  // gulp.watch(paths.scripts.src).on('change', gulp.series(scripts));
+  gulp.watch(paths.styles.src, gulp.series(styles, reload));
+  gulp.watch(paths.html.src, gulp.series(html, reload));
+  // gulp.watch(paths.scripts.src, scripts, reload);
+  // gulp.watch('src/pages/**/*.html').on('change', gulp.series(pages, inline, );
+  // gulp.watch(['src/layouts/**/*', 'src/partials/**/*']).on('change', gulp.series(resetPages, pages, inline, browser.reload));
+  // gulp.watch(['../scss/**/*.scss', 'src/assets/scss/**/*.scss']).on('change', gulp.series(sass, pages, inline, browser.reload));
+  // gulp.watch('src/assets/img/**/*').on('change', gulp.series(images, );
 }
 
 function fontello() {
@@ -235,421 +251,420 @@ function svg() {
 
 function images() {
   return gulp
-  .src(paths.images.src) // Change path
+  .src(paths.images.src)
   .pipe($.newer(paths.images.dist))
   .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
-  .pipe(
-    $.responsive(
-      {
-        '*.png': [
-          {
-            // -small.webp is 320 pixels wide
-            width: 320,
-            rename: {
-              suffix: '-small',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -small@2x.webp is 640 pixels wide
-            width: 320 * 2,
-            rename: {
-              suffix: '-small@2x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -small@3x.webp is 960 pixels wide
-            width: 320 * 3,
-            rename: {
-              suffix: '-small@3x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -medium.webp is 768 pixels wide
-            width: 768,
-            rename: {
-              suffix: '-medium',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -medium@2x.webp is 1.536 pixels wide
-            width: 768 * 2,
-            rename: {
-              suffix: '-medium@2x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -medium@3x.webp is 2.304 pixels wide
-            width: 768 * 3,
-            rename: {
-              suffix: '-medium@3x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -large.webp is 1.280 pixels wide
-            width: 1280,
-            rename: {
-              suffix: '-large',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -large@2x.webp is 2.560 pixels wide
-            width: 1280 * 2,
-            rename: {
-              suffix: '-large@2x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -large@3x.webp is 3.840 pixels wide
-            width: 1280 * 3,
-            rename: {
-              suffix: '-large@3x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -extralarge.webp is 1.440 pixels wide
-            width: 1440,
-            rename: {
-              suffix: '-extralarge',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -extralarge@2x.webp is 2.880 pixels wide
-            width: 1440 * 2,
-            rename: {
-              suffix: '-extralarge@2x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -extralarge@3x.webp is 4.320 pixels wide
-            width: 1440 * 3,
-            rename: {
-              suffix: '-extralarge@3x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -small.webp is 320 pixels wide
-            width: 320,
-            rename: {
-              suffix: '-small',
-              extname: '.webp',
-            },
-          },
-          {
-            // -small@2x.webp is 640 pixels wide
-            width: 320 * 2,
-            rename: {
-              suffix: '-small@2x',
-              extname: '.webp',
-            },
-          },
-          {
-            // -small@3x.webp is 960 pixels wide
-            width: 320 * 3,
-            rename: {
-              suffix: '-small@3x',
-              extname: '.webp',
-            },
-          },
-          {
-            // -medium.webp is 768 pixels wide
-            width: 768,
-            rename: {
-              suffix: '-medium',
-              extname: '.webp',
-            },
-          },
-          {
-            // -medium@2x.webp is 1.536 pixels wide
-            width: 768 * 2,
-            rename: {
-              suffix: '-medium@2x',
-              extname: '.webp',
-            },
-          },
-          {
-            // -medium@3x.webp is 2.304 pixels wide
-            width: 768 * 3,
-            rename: {
-              suffix: '-medium@3x',
-              extname: '.webp',
-            },
-          },
-          {
-            // -large.webp is 1.280 pixels wide
-            width: 1280,
-            rename: {
-              suffix: '-large',
-              extname: '.webp',
-            },
-          },
-          {
-            // -large@2x.webp is 2.560 pixels wide
-            width: 1280 * 2,
-            rename: {
-              suffix: '-large@2x',
-              extname: '.webp',
-            },
-          },
-          {
-            // -large@3x.webp is 3.840 pixels wide
-            width: 1280 * 3,
-            rename: {
-              suffix: '-large@3x',
-              extname: '.webp',
-            },
-          },
-          {
-            // -extralarge.webp is 1.440 pixels wide
-            width: 1440,
-            rename: {
-              suffix: '-extralarge',
-              extname: '.webp',
-            },
-          },
-          {
-            // -extralarge@2x.webp is 2.880 pixels wide
-            width: 1440 * 2,
-            rename: {
-              suffix: '-extralarge@2x',
-              extname: '.webp',
-            },
-          },
-          {
-            // -extralarge@3x.webp is 4.320 pixels wide
-            width: 1440 * 3,
-            rename: {
-              suffix: '-extralarge@3x',
-              extname: '.webp',
-            },
-          },
-        ],
-        '*.jpg': [
-          {
-            // -small.webp is 320 pixels wide
-            width: 320,
-            rename: {
-              suffix: '-small',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -small@2x.webp is 640 pixels wide
-            width: 320 * 2,
-            rename: {
-              suffix: '-small@2x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -small@3x.webp is 960 pixels wide
-            width: 320 * 3,
-            rename: {
-              suffix: '-small@3x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -medium.webp is 768 pixels wide
-            width: 768,
-            rename: {
-              suffix: '-medium',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -medium@2x.webp is 1.536 pixels wide
-            width: 768 * 2,
-            rename: {
-              suffix: '-medium@2x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -medium@3x.webp is 2.304 pixels wide
-            width: 768 * 3,
-            rename: {
-              suffix: '-medium@3x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -large.webp is 1.280 pixels wide
-            width: 1280,
-            rename: {
-              suffix: '-large',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -large@2x.webp is 2.560 pixels wide
-            width: 1280 * 2,
-            rename: {
-              suffix: '-large@2x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -large@3x.webp is 3.840 pixels wide
-            width: 1280 * 3,
-            rename: {
-              suffix: '-large@3x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -extralarge.webp is 1.440 pixels wide
-            width: 1440,
-            rename: {
-              suffix: '-extralarge',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -extralarge@2x.webp is 2.880 pixels wide
-            width: 1440 * 2,
-            rename: {
-              suffix: '-extralarge@2x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -extralarge@3x.webp is 4.320 pixels wide
-            width: 1440 * 3,
-            rename: {
-              suffix: '-extralarge@3x',
-              extname: '.jpg',
-            },
-          },
-          {
-            // -small.webp is 320 pixels wide
-            width: 320,
-            rename: {
-              suffix: '-small',
-              extname: '.webp',
-            },
-          },
-          {
-            // -small@2x.webp is 640 pixels wide
-            width: 320 * 2,
-            rename: {
-              suffix: '-small@2x',
-              extname: '.webp',
-            },
-          },
-          {
-            // -small@3x.webp is 960 pixels wide
-            width: 320 * 3,
-            rename: {
-              suffix: '-small@3x',
-              extname: '.webp',
-            },
-          },
-          {
-            // -medium.webp is 768 pixels wide
-            width: 768,
-            rename: {
-              suffix: '-medium',
-              extname: '.webp',
-            },
-          },
-          {
-            // -medium@2x.webp is 1.536 pixels wide
-            width: 768 * 2,
-            rename: {
-              suffix: '-medium@2x',
-              extname: '.webp',
-            },
-          },
-          {
-            // -medium@3x.webp is 2.304 pixels wide
-            width: 768 * 3,
-            rename: {
-              suffix: '-medium@3x',
-              extname: '.webp',
-            },
-          },
-          {
-            // -large.webp is 1.280 pixels wide
-            width: 1280,
-            rename: {
-              suffix: '-large',
-              extname: '.webp',
-            },
-          },
-          {
-            // -large@2x.webp is 2.560 pixels wide
-            width: 1280 * 2,
-            rename: {
-              suffix: '-large@2x',
-              extname: '.webp',
-            },
-          },
-          {
-            // -large@3x.webp is 3.840 pixels wide
-            width: 1280 * 3,
-            rename: {
-              suffix: '-large@3x',
-              extname: '.webp',
-            },
-          },
-          {
-            // -extralarge.webp is 1.440 pixels wide
-            width: 1440,
-            rename: {
-              suffix: '-extralarge',
-              extname: '.webp',
-            },
-          },
-          {
-            // -extralarge@2x.webp is 2.880 pixels wide
-            width: 1440 * 2,
-            rename: {
-              suffix: '-extralarge@2x',
-              extname: '.webp',
-            },
-          },
-          {
-            // -extralarge@3x.webp is 4.320 pixels wide
-            width: 1440 * 3,
-            rename: {
-              suffix: '-extralarge@3x',
-              extname: '.webp',
-            },
-          },
-        ],
-      },
-      {
-        // Global configuration for all images
-        // The output quality for JPEG, WebP and TIFF output formats
-        quality: 75,
-        // Use progressive (interlace) scan for JPEG and PNG output
-        progressive: true,
-        // Strip all metadata
-        withMetadata: false,
-        // Do not emit the error when image is enlarged.
-        errorOnEnlargement: false,
-      }
-    )
-  )
+  // .pipe(
+  //   $.responsive(
+  //     {
+  //       '*.png': [
+  //         {
+  //           // -small.webp is 320 pixels wide
+  //           width: 320,
+  //           rename: {
+  //             suffix: '-small',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -small@2x.webp is 640 pixels wide
+  //           width: 320 * 2,
+  //           rename: {
+  //             suffix: '-small@2x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -small@3x.webp is 960 pixels wide
+  //           width: 320 * 3,
+  //           rename: {
+  //             suffix: '-small@3x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -medium.webp is 768 pixels wide
+  //           width: 768,
+  //           rename: {
+  //             suffix: '-medium',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -medium@2x.webp is 1.536 pixels wide
+  //           width: 768 * 2,
+  //           rename: {
+  //             suffix: '-medium@2x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -medium@3x.webp is 2.304 pixels wide
+  //           width: 768 * 3,
+  //           rename: {
+  //             suffix: '-medium@3x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -large.webp is 1.280 pixels wide
+  //           width: 1280,
+  //           rename: {
+  //             suffix: '-large',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -large@2x.webp is 2.560 pixels wide
+  //           width: 1280 * 2,
+  //           rename: {
+  //             suffix: '-large@2x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -large@3x.webp is 3.840 pixels wide
+  //           width: 1280 * 3,
+  //           rename: {
+  //             suffix: '-large@3x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -extralarge.webp is 1.440 pixels wide
+  //           width: 1440,
+  //           rename: {
+  //             suffix: '-extralarge',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -extralarge@2x.webp is 2.880 pixels wide
+  //           width: 1440 * 2,
+  //           rename: {
+  //             suffix: '-extralarge@2x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -extralarge@3x.webp is 4.320 pixels wide
+  //           width: 1440 * 3,
+  //           rename: {
+  //             suffix: '-extralarge@3x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -small.webp is 320 pixels wide
+  //           width: 320,
+  //           rename: {
+  //             suffix: '-small',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -small@2x.webp is 640 pixels wide
+  //           width: 320 * 2,
+  //           rename: {
+  //             suffix: '-small@2x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -small@3x.webp is 960 pixels wide
+  //           width: 320 * 3,
+  //           rename: {
+  //             suffix: '-small@3x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -medium.webp is 768 pixels wide
+  //           width: 768,
+  //           rename: {
+  //             suffix: '-medium',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -medium@2x.webp is 1.536 pixels wide
+  //           width: 768 * 2,
+  //           rename: {
+  //             suffix: '-medium@2x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -medium@3x.webp is 2.304 pixels wide
+  //           width: 768 * 3,
+  //           rename: {
+  //             suffix: '-medium@3x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -large.webp is 1.280 pixels wide
+  //           width: 1280,
+  //           rename: {
+  //             suffix: '-large',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -large@2x.webp is 2.560 pixels wide
+  //           width: 1280 * 2,
+  //           rename: {
+  //             suffix: '-large@2x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -large@3x.webp is 3.840 pixels wide
+  //           width: 1280 * 3,
+  //           rename: {
+  //             suffix: '-large@3x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -extralarge.webp is 1.440 pixels wide
+  //           width: 1440,
+  //           rename: {
+  //             suffix: '-extralarge',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -extralarge@2x.webp is 2.880 pixels wide
+  //           width: 1440 * 2,
+  //           rename: {
+  //             suffix: '-extralarge@2x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -extralarge@3x.webp is 4.320 pixels wide
+  //           width: 1440 * 3,
+  //           rename: {
+  //             suffix: '-extralarge@3x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //       ],
+  //       '*.jpg': [
+  //         {
+  //           // -small.webp is 320 pixels wide
+  //           width: 320,
+  //           rename: {
+  //             suffix: '-small',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -small@2x.webp is 640 pixels wide
+  //           width: 320 * 2,
+  //           rename: {
+  //             suffix: '-small@2x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -small@3x.webp is 960 pixels wide
+  //           width: 320 * 3,
+  //           rename: {
+  //             suffix: '-small@3x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -medium.webp is 768 pixels wide
+  //           width: 768,
+  //           rename: {
+  //             suffix: '-medium',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -medium@2x.webp is 1.536 pixels wide
+  //           width: 768 * 2,
+  //           rename: {
+  //             suffix: '-medium@2x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -medium@3x.webp is 2.304 pixels wide
+  //           width: 768 * 3,
+  //           rename: {
+  //             suffix: '-medium@3x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -large.webp is 1.280 pixels wide
+  //           width: 1280,
+  //           rename: {
+  //             suffix: '-large',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -large@2x.webp is 2.560 pixels wide
+  //           width: 1280 * 2,
+  //           rename: {
+  //             suffix: '-large@2x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -large@3x.webp is 3.840 pixels wide
+  //           width: 1280 * 3,
+  //           rename: {
+  //             suffix: '-large@3x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -extralarge.webp is 1.440 pixels wide
+  //           width: 1440,
+  //           rename: {
+  //             suffix: '-extralarge',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -extralarge@2x.webp is 2.880 pixels wide
+  //           width: 1440 * 2,
+  //           rename: {
+  //             suffix: '-extralarge@2x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -extralarge@3x.webp is 4.320 pixels wide
+  //           width: 1440 * 3,
+  //           rename: {
+  //             suffix: '-extralarge@3x',
+  //             extname: '.jpg',
+  //           },
+  //         },
+  //         {
+  //           // -small.webp is 320 pixels wide
+  //           width: 320,
+  //           rename: {
+  //             suffix: '-small',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -small@2x.webp is 640 pixels wide
+  //           width: 320 * 2,
+  //           rename: {
+  //             suffix: '-small@2x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -small@3x.webp is 960 pixels wide
+  //           width: 320 * 3,
+  //           rename: {
+  //             suffix: '-small@3x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -medium.webp is 768 pixels wide
+  //           width: 768,
+  //           rename: {
+  //             suffix: '-medium',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -medium@2x.webp is 1.536 pixels wide
+  //           width: 768 * 2,
+  //           rename: {
+  //             suffix: '-medium@2x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -medium@3x.webp is 2.304 pixels wide
+  //           width: 768 * 3,
+  //           rename: {
+  //             suffix: '-medium@3x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -large.webp is 1.280 pixels wide
+  //           width: 1280,
+  //           rename: {
+  //             suffix: '-large',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -large@2x.webp is 2.560 pixels wide
+  //           width: 1280 * 2,
+  //           rename: {
+  //             suffix: '-large@2x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -large@3x.webp is 3.840 pixels wide
+  //           width: 1280 * 3,
+  //           rename: {
+  //             suffix: '-large@3x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -extralarge.webp is 1.440 pixels wide
+  //           width: 1440,
+  //           rename: {
+  //             suffix: '-extralarge',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -extralarge@2x.webp is 2.880 pixels wide
+  //           width: 1440 * 2,
+  //           rename: {
+  //             suffix: '-extralarge@2x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //         {
+  //           // -extralarge@3x.webp is 4.320 pixels wide
+  //           width: 1440 * 3,
+  //           rename: {
+  //             suffix: '-extralarge@3x',
+  //             extname: '.webp',
+  //           },
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       // Global configuration for all images
+  //       // The output quality for JPEG, WebP and TIFF output formats
+  //       quality: 75,
+  //       // Use progressive (interlace) scan for JPEG and PNG output
+  //       progressive: true,
+  //       // Strip all metadata
+  //       withMetadata: false,
+  //       // Do not emit the error when image is enlarged.
+  //       errorOnEnlargement: false,
+  //     }
+  //   )
+  // )
   .pipe(gulp.dest(paths.images.dist))
   .pipe($.notify({ message: '> Images task finished!', onLast: true }));
 }
 
 const html = gulp.series(pug, copyHtml);
 const styles = gulp.series(sass, css);
-// const scripts = gulp.series(gulp.parallel(prismJs, babelJs, inlineJs), js);
 const scripts = gulp.series(babelJs, js);
 const fonts = gulp.series(fontello, copyFonts);
 
@@ -662,9 +677,9 @@ const build = gulp.series(
 const watch = gulp.series(
   fonts,
   gulp.parallel(scripts, styles, html),
-  gulp.parallel(watchFiles, browserSync)
+  gulp.parallel(browserSyncc, watchFiles)
+  // gulp.parallel(watchFiles)
 );
-
 
 exports.default = watch;
 

@@ -1,8 +1,7 @@
 {
-  "name": "portfolio",
+  "name": "MasMovil Landidg",
   "version": "1.0.0",
-  "sasslintConfig": "./.sass-lint.yml",
-  "description": "Porfolio of Alvaro Marques Ramos",
+  "description": "MasMovil Landing Page",
   "main": "gulpfile.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

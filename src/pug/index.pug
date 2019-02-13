@@ -5,6 +5,9 @@ html(lang="es")
     include _includes/head/index.pug
 
   body
-    h1 Hello world!
-    i.icon-search
-    script(src="js/main.min.js")
+    include _includes/body/header.pug
+    
+    main.main
+      include _includes/body/footer.pug
+    
+    script(src="assets/scripts/main.min.js")
