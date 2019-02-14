@@ -63,5 +63,9 @@
     "pugName": "**/*.pug",
     "htmlName": "**/*.html",
     "includesName": "_includes{,/**}"
-  }
+  },
+  "critical": [
+    "index.html",
+    "blog/index.html"
+  ]
 }

@@ -7,8 +7,6 @@ const $ = require('gulp-load-plugins')({
   scope: ['devDependencies']
 });
 
-
-
 const banner = [
     "/**",
     " * @project        <%= paths.name %>",
@@ -64,6 +62,63 @@ function css(done) {
     .pipe($.browserSync.stream())
     done();
 }
+
+
+// Process data in an array synchronously, moving onto the n+1 item only after the nth item callback
+function doSynchronousLoop(data, processData, done) {
+    if (data.length > 0) {
+        const loop = (data, i, processData, done) => {
+            processData(data[i], i, () => {
+                if (++i < data.length) {
+                    loop(data, i, processData, done);
+                } else {
+                    done();
+                }
+            });
+        };
+        loop(data, 0, processData, done);
+    } else {
+        done();
+    }
+}
+
+// Process the critical path CSS one at a time
+function processCriticalCSS(url, i, callback) {
+    const criticalSrc = url;
+    const criticalDest = url;
+    console.log(criticalSrc);
+    let criticalWidth = 1200;
+    let criticalHeight = 1200;
+    // if (element.template.indexOf("amp_") !== -1) {
+    //     criticalWidth = 600;
+    //     criticalHeight = 19200;
+    // }
+    // $.fancyLog("-> Generating critical CSS: " + $.chalk.cyan(criticalSrc) + " -> " + $.chalk.magenta(criticalDest));
+    $.critical.generate({
+        base: "./dist/",
+        src: criticalSrc,
+        dest: criticalDest,
+        inline: true,
+        // ignore: [],
+        css: paths.styles.dist + "main.min.css",
+        minify: true,
+        width: criticalWidth,
+        height: criticalHeight
+    }, (err, output) => {
+        if (err) {
+            // $.fancyLog($.chalk.magenta(err));
+        }
+        callback()
+    });
+}
+
+//critical css task
+function critical(callback) {
+    doSynchronousLoop(paths.critical, processCriticalCSS, () => {
+        // all done
+        callback();
+    });
+};
 
 function pug(buildHTML) {
   return gulp
@@ -203,7 +258,7 @@ function browserSyncc() {
     // online: true,
   });
 }
-// BrowserSync Reload
+
 function reload(done) {
   browserSync.reload();
   done();
@@ -239,7 +294,7 @@ function copyFonts() {
   .pipe(gulp.dest(paths.fonts.dist))
 }
 
-function clean() {
+function clear() {
   return $.del(["./build", "./dist", "./craft"]);
 }
 
@@ -668,17 +723,18 @@ const styles = gulp.series(sass, css);
 const scripts = gulp.series(babelJs, js);
 const fonts = gulp.series(fontello, copyFonts);
 
-const build = gulp.series(
-  clean,
-  gulp.parallel(images, favicons, fonts, svg),
-  gulp.parallel(html, styles, scripts)
-)
-
 const watch = gulp.series(
   fonts,
   gulp.parallel(scripts, styles, html),
   gulp.parallel(browserSyncc, watchFiles)
   // gulp.parallel(watchFiles)
+);
+
+const build = gulp.series(
+  clear,
+  gulp.parallel(images, favicons, fonts, svg),
+  gulp.parallel(html, styles, scripts),
+  // critical
 );
 
 exports.default = watch;
@@ -692,9 +748,11 @@ exports.fonts = fonts;
 exports.images = images;
 exports.svg = svg;
 exports.favicons = favicons;
-exports.clean = clean;
+exports.clear = clear;
 
 exports.prismJs = prismJs;
 exports.babelJs = babelJs;
 exports.inlineJs = inlineJs;
 exports.js = js;
+
+exports.critical = critical;
