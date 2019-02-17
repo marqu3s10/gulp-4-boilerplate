@@ -32,7 +32,19 @@ function sass() {
     .pipe(gulp.dest(paths.styles.build))
 }
 
-function css(done) {
+function cssDev(done) {
+  return gulp
+  .src([
+    "./build/assets/styles/main.css.map",
+    "./build/assets/styles/main.css"
+  ])
+  .pipe(gulp.dest(paths.styles.dist))
+    // $.fancyLog("> Finish css development")
+  .pipe($.browserSync.stream())
+  done();
+}
+
+function cssProd(done) {
   $.fancyLog("> Building css");
   return gulp
     .src([
@@ -45,7 +57,7 @@ function css(done) {
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
     .pipe($.newer({dest: paths.styles.dist}))
     .pipe($.sourcemaps.init())
-    .pipe($.concat("main.min.css"))
+    .pipe($.concat("main.css"))
     .pipe($.cssnano({
       discardComments: {
         removeAll: true
@@ -63,6 +75,46 @@ function css(done) {
     done();
 }
 
+function css(done) {
+  if(process.env.NODE_ENV === 'development') {
+    return gulp
+      .src([
+        "./build/assets/styles/main.css.map",
+        "./build/assets/styles/main.css"
+      ])
+      .pipe(gulp.dest(paths.styles.dist))
+      .pipe($.browserSync.stream())
+    done();
+  } else if(process.env.NODE_ENV === 'production'){
+    return gulp
+      .src([
+        paths.node.normalize,
+        paths.fonts.fontello.build + paths.fonts.fontello.cssName,
+        paths.styles.build + paths.styles.cssName
+      ], {
+        allowEmpty: true
+      })
+      .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
+      .pipe($.newer({dest: paths.styles.dist}))
+      .pipe($.sourcemaps.init())
+      .pipe($.concat("main.css"))
+      .pipe($.cssnano({
+        discardComments: {
+          removeAll: true
+        },
+        discardDuplicates: true,
+        discardEmpty: true,
+        minifyFontValues: true,
+        minifySelectors: true
+      }))
+      .pipe($.header(banner, {paths: paths}))
+      .pipe($.sourcemaps.write("./"))
+      .pipe($.size({gzip: true, showFiles: true}))
+      .pipe(gulp.dest(paths.styles.dist))
+      .pipe($.browserSync.stream())
+    done();
+  }
+}
 
 // Process data in an array synchronously, moving onto the n+1 item only after the nth item callback
 function doSynchronousLoop(data, processData, done) {
@@ -718,23 +770,36 @@ function images() {
   .pipe($.notify({ message: '> Images task finished!', onLast: true }));
 }
 
+// set the node environment to development
+function setDevEnv(done) {
+  $.fancyLog("-> Setting NODE_ENV to development");
+  process.env.NODE_ENV = "development";
+  done();
+};
+
+// set the node environment to production
+function setProdEnv(done) {
+  $.fancyLog("-> Setting NODE_ENV to production");
+  process.env.NODE_ENV = "production";
+  done();
+};
+
 const html = gulp.series(pug, copyHtml);
 const styles = gulp.series(sass, css);
 const scripts = gulp.series(babelJs, js);
 const fonts = gulp.series(fontello, copyFonts);
 
 const watch = gulp.series(
-  fonts,
+  fonts, setDevEnv,
   gulp.parallel(scripts, styles, html),
   gulp.parallel(browserSyncc, watchFiles)
-  // gulp.parallel(watchFiles)
 );
 
 const build = gulp.series(
-  clear,
+  gulp.parallel(setProdEnv, clear),
   gulp.parallel(images, favicons, fonts, svg),
   gulp.parallel(html, styles, scripts),
-  // critical
+  critical
 );
 
 exports.default = watch;
