@@ -36,12 +36,13 @@ function css(done) {
   if(process.env.NODE_ENV === 'development') {
     return gulp
       .src([
-        "./build/assets/styles/main.css.map",
-        "./build/assets/styles/main.css"
+        paths.styles.build + paths.styles.cssName,
+        paths.styles.build + paths.styles.cssMapName
       ])
       .pipe(gulp.dest(paths.styles.dist))
       .pipe($.browserSync.stream())
     done();
+
   } else if(process.env.NODE_ENV === 'production'){
     return gulp
       .src([

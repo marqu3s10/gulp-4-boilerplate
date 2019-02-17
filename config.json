@@ -39,7 +39,8 @@
     "build": "./build/assets/styles/",
     "dist": "./dist/assets/styles/",
     "cssName": "*.css",
-    "sassName": "*.sass"
+    "sassName": "*.sass",
+    "cssMapName": "*.css.map"
   },
   "fonts": {
     "src": "./src/",
