@@ -32,49 +32,6 @@ function sass() {
     .pipe(gulp.dest(paths.styles.build))
 }
 
-function cssDev(done) {
-  return gulp
-  .src([
-    "./build/assets/styles/main.css.map",
-    "./build/assets/styles/main.css"
-  ])
-  .pipe(gulp.dest(paths.styles.dist))
-    // $.fancyLog("> Finish css development")
-  .pipe($.browserSync.stream())
-  done();
-}
-
-function cssProd(done) {
-  $.fancyLog("> Building css");
-  return gulp
-    .src([
-      paths.node.normalize,
-      paths.fonts.fontello.build + paths.fonts.fontello.cssName,
-      paths.styles.build + paths.styles.cssName
-    ], {
-      allowEmpty: true
-    })
-    .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
-    .pipe($.newer({dest: paths.styles.dist}))
-    .pipe($.sourcemaps.init())
-    .pipe($.concat("main.css"))
-    .pipe($.cssnano({
-      discardComments: {
-        removeAll: true
-      },
-      discardDuplicates: true,
-      discardEmpty: true,
-      minifyFontValues: true,
-      minifySelectors: true
-    }))
-    .pipe($.header(banner, {paths: paths}))
-    .pipe($.sourcemaps.write("./"))
-    .pipe($.size({gzip: true, showFiles: true}))
-    .pipe(gulp.dest(paths.styles.dist))
-    .pipe($.browserSync.stream())
-    done();
-}
-
 function css(done) {
   if(process.env.NODE_ENV === 'development') {
     return gulp
@@ -138,14 +95,13 @@ function doSynchronousLoop(data, processData, done) {
 function processCriticalCSS(url, i, callback) {
     const criticalSrc = url;
     const criticalDest = url;
-    console.log(criticalSrc);
     let criticalWidth = 1200;
     let criticalHeight = 1200;
     // if (element.template.indexOf("amp_") !== -1) {
     //     criticalWidth = 600;
     //     criticalHeight = 19200;
     // }
-    // $.fancyLog("-> Generating critical CSS: " + $.chalk.cyan(criticalSrc) + " -> " + $.chalk.magenta(criticalDest));
+    $.fancyLog("-> Generating critical CSS: " + $.chalk.cyan(criticalSrc) + " -> " + $.chalk.greenBright(criticalDest));
     $.critical.generate({
         base: "./dist/",
         src: criticalSrc,
@@ -158,7 +114,7 @@ function processCriticalCSS(url, i, callback) {
         height: criticalHeight
     }, (err, output) => {
         if (err) {
-            // $.fancyLog($.chalk.magenta(err));
+            $.fancyLog($.chalk.magenta(err));
         }
         callback()
     });
@@ -772,14 +728,14 @@ function images() {
 
 // set the node environment to development
 function setDevEnv(done) {
-  $.fancyLog("-> Setting NODE_ENV to development");
+  $.fancyLog("-> Setting NODE_ENV to " + $.chalk.blue("DEVELOPMENT"));
   process.env.NODE_ENV = "development";
   done();
 };
 
 // set the node environment to production
 function setProdEnv(done) {
-  $.fancyLog("-> Setting NODE_ENV to production");
+  $.fancyLog("-> Setting NODE_ENV to " + $.chalk.blue("PRODUCTION"));
   process.env.NODE_ENV = "production";
   done();
 };
