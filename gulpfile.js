@@ -274,18 +274,8 @@ function reload(done) {
 }
 
 function watchFiles() {
-  // gulp.watch(paths.styles.src, gulp.series(styles, reload));
-  // gulp.watch(paths.styles.src).on('change', gulp.series(styles, reload));
-  // gulp.watch(paths.html.src).on('change', gulp.series(html));
-  // gulp.watch(paths.images.src).on('change', gulp.series(images));
-  // gulp.watch(paths.scripts.src).on('change', gulp.series(scripts));
   gulp.watch(paths.styles.src, gulp.series(styles, reload));
   gulp.watch(paths.html.src, gulp.series(html, reload));
-  // gulp.watch(paths.scripts.src, scripts, reload);
-  // gulp.watch('src/pages/**/*.html').on('change', gulp.series(pages, inline, );
-  // gulp.watch(['src/layouts/**/*', 'src/partials/**/*']).on('change', gulp.series(resetPages, pages, inline, browser.reload));
-  // gulp.watch(['../scss/**/*.scss', 'src/assets/scss/**/*.scss']).on('change', gulp.series(sass, pages, inline, browser.reload));
-  // gulp.watch('src/assets/img/**/*').on('change', gulp.series(images, );
 }
 
 function fontello() {
