@@ -27,6 +27,10 @@ function sass() {
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
     .pipe($.sourcemaps.init())
     .pipe($.sass())
+    .pipe($.autoprefixer({
+      browsers: ['last 2 versions'],
+      cascade: false
+    }))
     .pipe($.sourcemaps.write('./'))
     .pipe($.size({gzip: true, showFiles: true}))
     .pipe(gulp.dest(paths.styles.build))
