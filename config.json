@@ -8,6 +8,10 @@
     "src": "./src/images/**/*.svg",
     "dist": "./dist/assets/images"
   },
+  "sprites": {
+    "src": "./src/images/sprites/**/*.{jpg,png}",
+    "build": "./build/assets/images/sprites/"
+  },
   "scripts": {
     "src": "./src/scripts/*.js",
     "build": "./build/assets/scripts/",

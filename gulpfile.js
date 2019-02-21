@@ -721,6 +721,14 @@ function images() {
   .pipe($.notify({ message: '> Images task finished!', onLast: true }));
 }
 
+function sprite() {
+  var spriteData = gulp.src(paths.sprites.src)
+  .pipe($.spritesmith({
+    imgName: 'sprite.png',
+    cssName: 'sprite.sass'
+  }));
+  return spriteData.pipe(gulp.dest(paths.sprites.build));
+}
 // set the node environment to development
 function setDevEnv(done) {
   $.fancyLog("-> Setting NODE_ENV to " + $.chalk.blue("DEVELOPMENT"));
@@ -763,6 +771,7 @@ exports.fonts = fonts;
 
 exports.images = images;
 exports.svg = svg;
+exports.sprity = sprite;
 exports.favicons = favicons;
 exports.clear = clear;
 

@@ -1,5 +1,5 @@
 {
-  "name": "Gulp 4 Boilerplate",
+  "name": "Base",
   "version": "1.0.0",
   "description": "A good gulpfile.js to start a static website",
   "main": "gulpfile.js",
@@ -49,6 +49,7 @@
     "gulp-sourcemaps": "^2.6.4",
     "gulp-svgmin": "^2.1.0",
     "gulp-uglify": "3.0.1",
+    "gulp.spritesmith": "^6.9.0",
     "moment": "^2.23.0",
     "prismjs": "^1.15.0",
     "sass-lint": "^1.12.1"
