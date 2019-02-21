@@ -1,7 +1,7 @@
 {
-  "name": "MasMovil Landidg",
+  "name": "Gulp 4 Boilerplate",
   "version": "1.0.0",
-  "description": "MasMovil Landing Page",
+  "description": "A good gulpfile.js to start a static website",
   "main": "gulpfile.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
