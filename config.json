@@ -1,12 +1,12 @@
 {
   "dist": "./dist",
   "images": {
-    "src": "./src/images/*.{jpg,png}",
-    "dist": "./dist/assets/images"
+    "src": "./src/images/site/**/*.{jpg,png}",
+    "dist": "./dist/assets/images/site/"
   },
   "svg": {
-    "src": "./src/images/**/*.svg",
-    "dist": "./dist/assets/images"
+    "src": "./src/images/svg/**/*.svg",
+    "dist": "./dist/assets/images/svg/"
   },
   "sprites": {
     "src": "./src/images/sprites/**/*.{jpg,png}",
