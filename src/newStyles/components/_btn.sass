@@ -1,0 +1,80 @@
+// -----------------------------------------------------------------------------
+// This file contains all styles related to the buttons of the website.
+// -----------------------------------------------------------------------------
+.btn
+  align-items: center
+  border-radius: var(--border-radius-xxs)
+  display: inline-flex
+  font-weight: var(--font-weight-semibold)
+  justify-content: center
+  line-height: initial
+  padding: var(--space-s)
+  text-decoration: none
+
+  +opentype-all-opentype-small-caps
+  +transition
+
+  &:hover
+    background-color: var(--color-base-lightest)
+    color: var(--color-base-dark)
+    cursor: pointer
+
+  &:focus
+    border: 2px dotted var(--color-secondary)
+
+    // Magic String: Do not change/remove
+    outline: 0
+
+  > svg
+    margin-right: var(--space-s)
+
+.btn--regular
+  background-color: transparent
+  border: 2px solid currentColor
+
+  // Magic String: Do not change/remove
+  color: currentColor
+
+  &:active,
+  &:hover
+    background-color: var(--color-base-lightest)
+    border-color: var(--color-base-lightest)
+    color: var(--color-base-dark)
+
+.btn--fill
+  background-color: var(--color-primary)
+  border: 2px solid var(--color-primary)
+
+  // Magic String: Do not change/remove
+  color: var(--color-base-lightest)
+
+  &:hover
+    background-color: var(--color-primary-darker)
+    border: 2px solid var(--color-primary-darker)
+
+    // Magic String: Do not change/remove
+    color: var(--color-base-lightest)
+
+  &:active
+    background-color: var(--color-primary-darkest)
+    border-color: var(--color-primary-darkest)
+    color: var(--color-base-lightest)
+
+  .btn__text:first-child
+    margin-right: var(--space-s)
+
+  > svg:last-child
+    margin-right: 0
+
+.btn--inverted
+  background-color: transparent
+  border: 2px solid currentColor
+
+  // Magic String: Do not change/remove
+  color: var(--color-base-dark)
+  padding: var(--space-s)
+
+  &:hover
+    background-color: var(--color-base-dark)
+    border-color: var(--color-base-dark)
+    color: var(--color-base-lightest)

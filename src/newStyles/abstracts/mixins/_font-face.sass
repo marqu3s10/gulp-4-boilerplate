@@ -1,0 +1,23 @@
+@mixin font-face($folder-name, $name, $path: #{$font-path} $style: normal, $stretch: normal, $weight: normal, $ttf: null, $eot: null, $woff: null, $woff2: null, $svg: null)
+  @font-face
+    font-family: $folder-name
+
+    @if $eot
+      src: url( $path + $folder-name + '/' + $name + '.eot')
+      src: url( $path + $folder-name + '/' + $name + '.eot?#iefix') format('embedded-opentype')
+
+    @if $woff2
+      src: url( $path + $folder-name + '/' + $name + '.woff2') format('woff2')
+
+    @if $woff
+      src: url( $path + $folder-name + '/' + $name + '.woff') format('woff')
+
+    @if $ttf
+      src: url( $path + $folder-name + '/' + $name + '.ttf') format('truetype')
+
+    @if $svg
+      src: url($path + $folder-name + '/' + $name + '.svg?#webfont') format('svg')
+
+    font-stretch: $stretch
+    font-style: $style
+    font-weight: $weight
