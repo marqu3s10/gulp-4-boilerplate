@@ -25,3 +25,14 @@
 // @require $base-url
 @function font($path, $base: $base-url)
   @return asset($base, "fonts/", $path)
+
+  
+// ==========================================================================
+// PX to EM/REM
+// ==========================================================================
+
+@function em($pixels)
+  @return #{$pixels/16}em
+
+@function rem($pixels)
+  @return #{$pixels/16}rem

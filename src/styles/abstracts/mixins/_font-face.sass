@@ -1,4 +1,4 @@
-@mixin font-face($folder-name, $name, $path: #{$font-path} $style: normal, $stretch: normal, $weight: normal, $ttf: null, $eot: null, $woff: null, $woff2: null, $svg: null)
+@mixin font-face($folder-name, $name, $path: #{var(--font-path)} $style: normal, $stretch: normal, $weight: normal, $ttf: null, $eot: null, $woff: null, $woff2: null, $svg: null)
   @font-face
     font-family: $folder-name
 

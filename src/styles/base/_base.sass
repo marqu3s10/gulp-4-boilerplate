@@ -1,22 +1,49 @@
-// ==========================================================================
-// Base (What's not in normalize, it's here)
-// ==========================================================================
+// -----------------------------------------------------------------------------
+// This file contains very basic styles.
+// -----------------------------------------------------------------------------
 
-*
-  margin: 0
-  padding: 0
-
-html
+//
+// Set up a decent box model on the root element
+// 1. Prevent adjustments of font size after orientation changes in iOS.
+//
+\:root
   box-sizing: border-box
+  color: var(--color-base-dark)
+  font-size: 100%
 
+  // 16px
+  line-height: 1.5
+
+  @media (min-width: $mq-m)
+    font-size: 120%
+
+  @media (min-width: $mq-xl)
+    font-size: 140%
+
+//
+// Make all elements from the DOM inherit from the parent box-sizing
+// Since `*` has a specificity of 0, it does not override the `html` value
+// making all elements inheriting from the root box-sizing value
+// See: https://css-tricks.com/inheriting-box-sizing-probably-slightly-better-best-practice/
+//
 *,
 *::before,
 *::after
   box-sizing: inherit
 
-input
-  border: 0
+\::selection
+  background-color: var(--color-primary)
+  color: var(--color-base-lightest)
 
-a
-  color: $black
-  text-decoration: none
+ul,
+ol
+  list-style-type: none
+
+
+// Prefers reduced motion
+// https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion
+//
+@media (prefers-reduced-motion: reduce)
+  *
+    animation: none !important
+    transition: none !important
