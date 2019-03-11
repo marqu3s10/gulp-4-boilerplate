@@ -1,5 +1,5 @@
 {
-  "name": "Base",
+  "name": "base",
   "version": "1.0.0",
   "description": "A good gulpfile.js to start a static website",
   "main": "gulpfile.js",
