@@ -50,6 +50,7 @@
     "gulp-svgmin": "^2.1.0",
     "gulp-uglify": "3.0.1",
     "gulp.spritesmith": "^6.9.0",
+    "modularscale-sass": "^3.0.8",
     "moment": "^2.23.0",
     "prismjs": "^1.15.0",
     "sass-lint": "^1.12.1"
