@@ -157,19 +157,6 @@ function copyHtml(done){
   done();
 }
 
-function prismJs(){
-  $.fancyLog("-> Building prism.min.js...");
-  return gulp
-    .src(paths.scripts.prismJs)
-    .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
-    .pipe($.newer({dest: paths.scripts.build}))
-    .pipe($.concat("prism.min.js"))
-    .pipe($.uglify())
-    .pipe($.size({gzip: true, showFiles: true}))
-    .pipe(gulp.dest(paths.scripts.build))
-    // .pipe($.browserSync.stream())
-}
-
 function babelJs(){
   $.fancyLog("-> Transpiling Javascript via Babel...");
   return gulp
@@ -775,7 +762,6 @@ exports.sprity = sprite;
 exports.favicons = favicons;
 exports.clear = clear;
 
-exports.prismJs = prismJs;
 exports.babelJs = babelJs;
 exports.inlineJs = inlineJs;
 exports.js = js;
