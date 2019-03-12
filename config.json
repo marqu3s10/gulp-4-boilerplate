@@ -20,7 +20,6 @@
     "inlineJs": [
       "./node_modules/fg-loadcss/src/loadCSS.js",
       "./node_modules/fg-loadcss/src/cssrelpreload.js",
-      "./node_modules/fontfaceobserver/fontfaceobserver.js",
       "./node_modules/loadjs/dist/loadjs.min.js"
     ],
     "templates": "./craft/templates/"

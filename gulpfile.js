@@ -164,7 +164,7 @@ function babelJs(){
     .pipe($.sourcemaps.init())
     .pipe($.plumber({ errorHandler: $.notify.onError('Error: <%= error.message %>') }))
     .pipe($.newer({dest: paths.scripts.build}))
-    .pipe($.concat('main.js'))
+    // .pipe($.concat('core.js'))
     .pipe($.babel({presets: ['@babel/env']}))
     .pipe($.size({gzip: true, showFiles: true}))
     .pipe(gulp.dest(paths.scripts.build))
@@ -191,7 +191,7 @@ function inlineJs() {
     // .pipe($.browserSync.stream())
 }
 
-function js(){
+function js(done){
   $.fancyLog("-> Building js");
   return gulp.src(paths.scripts.build + paths.scripts.jsName)
     .pipe($.sourcemaps.init())
@@ -210,7 +210,8 @@ function js(){
     .pipe($.header(banner, {paths: paths}))
     .pipe($.size({gzip: true, showFiles: true}))
     .pipe(gulp.dest(paths.scripts.dist))
-    // .pipe($.browserSync.stream())
+    .pipe($.browserSync.stream())
+    done()
 }
 
 function favicons() {
@@ -267,6 +268,7 @@ function reload(done) {
 function watchFiles() {
   gulp.watch(paths.styles.src, gulp.series(styles, reload));
   gulp.watch(paths.html.src, gulp.series(html, reload));
+  gulp.watch(paths.scripts.src, gulp.series(scripts, reload));
 }
 
 function fontello() {
